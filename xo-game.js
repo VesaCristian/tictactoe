@@ -1,7 +1,6 @@
 var origBoard;
 const huPlayer = 'O';
 const aiPlayer = 'X';
-var gameWin = false;
 const winCombos = [
     [0, 1, 2],
     [3, 4, 5],
@@ -19,7 +18,7 @@ startGame();
 function startGame() {
     document.querySelector(".endgame").style.display = "none";
     origBoard = Array.from(Array(9).keys());
-    gameWin = false;
+
     for (var i = 0; i < cells.length; i++) {
         cells[i].innerText = '';
         cells[i].style.removeProperty('background-color');
@@ -28,34 +27,26 @@ function startGame() {
 }
 
 function turnClick(square) {
-    if( typeof origBoard[square.target.id] == 'number') {
-        turn(square.target.id, huPlayer);
-        if(!gameWin){
-            if(!checkTie()) {
-                turn(bestSpot(), aiPlayer);
-            }
-        }    
-    }   
+	if (typeof origBoard[square.target.id] == 'number') {
+		turn(square.target.id, huPlayer)
+		if (!checkWin(origBoard, huPlayer) && !checkTie()) turn(bestSpot(), aiPlayer);
+	}
 }
 
 function turn(squareId, player) {
     origBoard[squareId] = player;
     document.getElementById(squareId).innerText = player;
-    let gameWon = checkWin(origBoard, player , false);
+    let gameWon = checkWin(origBoard, player);
     if(gameWon) gameOver(gameWon)
 }
 
-function checkWin(board, player, minimax) {
+function checkWin(board, player) {
     let plays = board.reduce((a, e, i) => 
     (e === player) ? a.concat(i) : a, [])
     let gameWon = null;
     for (let [index, win] of winCombos.entries()) {
         if(win.every(elem => plays.indexOf(elem) > -1)){
             gameWon = {index: index, player: player};
-            if(!minimax)
-                gameWin = true;
-            //gameWin = true;
-            //console.log("Game won:" + gameWon.player);
             break;
         }
     }
@@ -102,9 +93,9 @@ function checkTie() {
 function minimax(newBoard, player){
     var availableSpots = emptySquares(newBoard);
 
-    if(checkWin(newBoard, player, true)) {
+    if(checkWin(newBoard, huPlayer)) {
         return {score: -10};
-    } else if( checkWin(newBoard,aiPlayer, true)) {
+    } else if( checkWin(newBoard,aiPlayer)) {
         return {score: 10};
     } else if (availableSpots.length === 0) {
         return {score: 0};
